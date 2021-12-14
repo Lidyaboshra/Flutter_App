@@ -15,7 +15,7 @@ class Body extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(40),
-              color: Color(0xFFF1E6FF),
+              color: Color(0xFFE1F5FE),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
