@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_auth/Screens/Chat/Chat_Sceen.dart';
 //import 'package:flutter_svg/svg.dart';
 import 'package:flutter_auth/Screens/Login/login_screen.dart';
 import 'package:flutter_auth/Screens/Signup/components/background.dart';
@@ -12,6 +13,9 @@ import 'package:flutter_auth/components/rounded_input_field.dart';
 import 'package:flutter_auth/components/rounded_password_field.dart';
 import 'package:flutter_auth/usermodel/usermodel.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+
 // import 'package:url_launcher/url_launcher.dart';
 
 
@@ -48,6 +52,7 @@ var formKey=GlobalKey<FormState>();
 bool showpass=true;
 
 final _auth = FirebaseAuth.instance;
+
 
   @override
   Widget build(BuildContext context) {
@@ -187,15 +192,21 @@ final _auth = FirebaseAuth.instance;
                 children: <Widget>[
                   SocalIcon(
                     iconSrc: "assets/icons/facebook.svg",
-                    // press: _launchURL,
+                    press: (){
+                      signInWithFacebook(emailContoller.text, passwordContoller.text);
+                    }
                   ),
+                  // SocalIcon(
+                  //   iconSrc: "assets/icons/twitter.svg",
+                  //   press: () {
+                  //     //signUpWithMail();
+                  //   },
+                  // ),
                   SocalIcon(
-                    iconSrc: "assets/icons/twitter.svg",
-                    press: () {},
-                  ),
-                  SocalIcon(
-                    iconSrc: "assets/icons/google-plus.svg",
-                    press: () {},
+                    iconSrc: "assets/icons/gmail.svg",
+                    press: () {
+                      signInWithGoogle(emailContoller.text, passwordContoller.text);
+                    },
                   ),
                 ],
               ),
@@ -217,7 +228,44 @@ final _auth = FirebaseAuth.instance;
         });
       } 
   }
-  postDetailsToFirestore() async {
+ 
+   Future<UserCredential> signInWithGoogle(String email, String password) async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+postDetailsToFirestore();
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  Future<UserCredential> signInWithFacebook(String email, String password) async {
+    // Trigger the sign-in flow
+    final LoginResult loginResult = await FacebookAuth.instance.login(
+     // permissions: ['email', 'password', 'name']
+    );
+
+    // Create a credential from the access token
+    final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(
+      loginResult.accessToken.token);
+
+     postDetailsToFirestore();
+    // Once signed in, return the UserCredential
+    return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+  }
+
+
+
+   postDetailsToFirestore() async {
+    
+
     // calling our firestore
     // calling our user model
     // sedning these values
@@ -238,12 +286,11 @@ final _auth = FirebaseAuth.instance;
         .doc(user.uid)
         .set(userModel.toMap());
     Fluttertoast.showToast(msg: "Account created successfully :) ");
-
      Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) {
-                        return LoginScreen();
+                        return Chat();
                       },
                     ),
                   );
