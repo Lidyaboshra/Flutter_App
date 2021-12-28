@@ -13,20 +13,9 @@ import 'package:flutter_auth/components/rounded_input_field.dart';
 import 'package:flutter_auth/components/rounded_password_field.dart';
 import 'package:flutter_auth/usermodel/usermodel.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-
-// import 'package:url_launcher/url_launcher.dart';
-
-
-// _launchURL() async {
-//   const url = 'https://www.facebook.com/login/';
-//   if (await canLaunch(url)) {
-//     await launch(url);
-//   } else {
-//     throw 'Could not launch $url';
-//   }
-// }
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+//import 'package:google_sign_in/google_sign_in.dart';
+//import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 
 class Body extends StatefulWidget {
@@ -53,164 +42,181 @@ bool showpass=true;
 
 final _auth = FirebaseAuth.instance;
 
+bool showSpinner=false;
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Background(
-      child: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "SIGNUP",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: size.height * 0.03),
-            
-              //FirstName Field
-              RoundedInputField(
-                hintText: "First Name",
-                contoller: firstname,
+      child:  ModalProgressHUD(
+        inAsyncCall:showSpinner,
+        child: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "SIGNUP",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: size.height * 0.03),
+              
+                //FirstName Field
+                RoundedInputField(
+                  hintText: "First Name",
+                  contoller: firstname,
+                  type:TextInputType.name ,
+      
+                  onChanged: (value) {},
+                  validate:   (value){
+                    RegExp regex = new RegExp(r'^.{3,}$');
+                   if(value.isEmpty){
+                      return "Please Enter First Name";
+                      }
+                      if (!regex.hasMatch(value)) {
+                    return ("Enter Valid name(Min. 3 Character)");
+                      }
+                     return null;
+                    },
+      
+                ),
+      
+                //LastName Field
+                RoundedInputField(
+                  hintText: "Last Name",
+                 contoller: lastname,
                 type:TextInputType.name ,
-
-                onChanged: (value) {},
-                validate:   (value){
-                  RegExp regex = new RegExp(r'^.{3,}$');
-                 if(value.isEmpty){
-                    return "Please Enter First Name";
+                  onChanged: (value) {},
+                  validate:   (value){
+                   if(value.isEmpty){
+                      return "Please Enter Your Last Name";
                     }
-                    if (!regex.hasMatch(value)) {
-                  return ("Enter Valid name(Min. 3 Character)");
+                     return null;
+                    },
+                ),
+               
+                //Email Field
+                RoundedInputField(
+                  hintText: "Your Email",
+                   type:TextInputType.emailAddress ,
+                  icon: Icons.email,
+                  onChanged: (value) {},
+                  contoller: emailContoller,
+                  validate:   (value){
+                   if(value.isEmpty){
+                      return "Please Enter Your Email";
                     }
-                   return null;
+                   if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                      .hasMatch(value)) {
+                    return ("Please Enter a valid email");
+                    }
+                     return null;
+                    },
+                ),
+          
+                //Password Field
+                RoundedPasswordField(
+                  text: "Password",
+                  obscure: showpass,
+                  contoller: passwordContoller,
+                  ifpressed: (){
+                    setState(() {
+                      showpass = !showpass;
+                    });
                   },
+                  onChanged: (value) {},
+                  validate:   (value){
+                    RegExp regex = new RegExp(r'^.{6,}$');
+                   if(value.isEmpty){
+                      return "Please Enter Your Password";
+                    }
+                   if (!regex.hasMatch(value)) {
+                      return ("Enter Valid Password(Min. 6 Character)");
+                    }
+                     return null;
+                    },
+                ),
+      
+                  //ConfirmPassword Field
+                 RoundedPasswordField(
+                  text: "Confirm Password",
+                  obscure: showpass,
+                  contoller: confirmpasswordContoller,
+                  ifpressed: (){
+                    setState(() {
+                      showpass = !showpass;
+                    });
+                  },
+                  onChanged: (value) {},
+                  validate:   (value){
+                   if (confirmpasswordContoller.text !=
+                        passwordContoller.text) {
+                      return "Password don't match";
+                    }
+                     return null;
+                    },
+                ),
+          
+                RoundedButton(
+                  text: "SIGNUP",
+                  press: () {
+                    setState(() {
+                      showSpinner=true;
+                    });
+                    
+                  try{
+                      signUp(emailContoller.text, passwordContoller.text);
+                     setState(() {
+                      showSpinner=false;
+                    });}
+                    catch(e){
+                      print(e);
 
-              ),
-
-              //LastName Field
-              RoundedInputField(
-                hintText: "Last Name",
-               contoller: lastname,
-              type:TextInputType.name ,
-                onChanged: (value) {},
-                validate:   (value){
-                 if(value.isEmpty){
-                    return "Please Enter Your Last Name";
-                  }
-                   return null;
+                    }
+                  
                   },
-              ),
-             
-              //Email Field
-              RoundedInputField(
-                hintText: "Your Email",
-                 type:TextInputType.emailAddress ,
-                icon: Icons.email,
-                onChanged: (value) {},
-                contoller: emailContoller,
-                validate:   (value){
-                 if(value.isEmpty){
-                    return "Please Enter Your Email";
-                  }
-                 if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
-                    .hasMatch(value)) {
-                  return ("Please Enter a valid email");
-                  }
-                   return null;
+                ),
+                SizedBox(height: size.height * 0.03),
+                AlreadyHaveAnAccountCheck(
+                  login: false,
+                  press: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return LoginScreen();
+                        },
+                      ),
+                    );
                   },
-              ),
-        
-              //Password Field
-              RoundedPasswordField(
-                text: "Password",
-                obscure: showpass,
-                contoller: passwordContoller,
-                ifpressed: (){
-                  setState(() {
-                    showpass = !showpass;
-                  });
-                },
-                onChanged: (value) {},
-                validate:   (value){
-                  RegExp regex = new RegExp(r'^.{6,}$');
-                 if(value.isEmpty){
-                    return "Please Enter Your Password";
-                  }
-                 if (!regex.hasMatch(value)) {
-                    return ("Enter Valid Password(Min. 6 Character)");
-                  }
-                   return null;
-                  },
-              ),
-
-                //ConfirmPassword Field
-               RoundedPasswordField(
-                text: "Confirm Password",
-                obscure: showpass,
-                contoller: confirmpasswordContoller,
-                ifpressed: (){
-                  setState(() {
-                    showpass = !showpass;
-                  });
-                },
-                onChanged: (value) {},
-                validate:   (value){
-                 if (confirmpasswordContoller.text !=
-                      passwordContoller.text) {
-                    return "Password don't match";
-                  }
-                   return null;
-                  },
-              ),
-        
-              RoundedButton(
-                text: "SIGNUP",
-                press: () {
-              signUp(emailContoller.text, passwordContoller.text);
-                },
-              ),
-              SizedBox(height: size.height * 0.03),
-              AlreadyHaveAnAccountCheck(
-                login: false,
-                press: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return LoginScreen();
+                ),
+                OrDivider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SocalIcon(
+                      iconSrc: "assets/icons/facebook.svg",
+                      press: (){
+                        //signInWithFacebook(emailContoller.text, passwordContoller.text);
+                      }
+                    ),
+                    // SocalIcon(
+                    //   iconSrc: "assets/icons/twitter.svg",
+                    //   press: () {
+                    //     //signUpWithMail();
+                    //   },
+                    // ),
+                    SocalIcon(
+                      iconSrc: "assets/icons/gmail.svg",
+                      press: () {
+                       // signInWithGoogle(emailContoller.text, passwordContoller.text);
                       },
                     ),
-                  );
-                },
-              ),
-              OrDivider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SocalIcon(
-                    iconSrc: "assets/icons/facebook.svg",
-                    press: (){
-                      signInWithFacebook(emailContoller.text, passwordContoller.text);
-                    }
-                  ),
-                  // SocalIcon(
-                  //   iconSrc: "assets/icons/twitter.svg",
-                  //   press: () {
-                  //     //signUpWithMail();
-                  //   },
-                  // ),
-                  SocalIcon(
-                    iconSrc: "assets/icons/gmail.svg",
-                    press: () {
-                      signInWithGoogle(emailContoller.text, passwordContoller.text);
-                    },
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -221,7 +227,9 @@ final _auth = FirebaseAuth.instance;
     if (formKey.currentState.validate()) {
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
-            .then((value) => {postDetailsToFirestore()})
+            .then(
+              (value) => {postDetailsToFirestore()}
+              )
             .catchError((e) {
           Fluttertoast.showToast(msg: e.message);
             
@@ -229,43 +237,64 @@ final _auth = FirebaseAuth.instance;
       } 
   }
  
-   Future<UserCredential> signInWithGoogle(String email, String password) async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+//   // void signInWithGoogle(String email, String password) async {
+//   //   // Trigger the authentication flow
+//   //   final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+//   //   // Obtain the auth details from the request
+//   //   final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-postDetailsToFirestore();
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
-  }
+//   //   // Create a new credential
+//   //   final credential = GoogleAuthProvider.credential(
+//   //     accessToken: googleAuth.accessToken,
+//   //     idToken: googleAuth.idToken,
+//   //   );
+//   //  await _auth.signInWithCredential(credential)
+//   //           .then((value) => {postDetailsToFirestore()})
+//   //           .catchError((e) {
+//   //         Fluttertoast.showToast(msg: e.message);
+            
+//   //       });
 
-  Future<UserCredential> signInWithFacebook(String email, String password) async {
-    // Trigger the sign-in flow
-    final LoginResult loginResult = await FacebookAuth.instance.login(
-     // permissions: ['email', 'password', 'name']
-    );
-
-    // Create a credential from the access token
-    final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(
-      loginResult.accessToken.token);
-
-     postDetailsToFirestore();
-    // Once signed in, return the UserCredential
-    return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
-  }
+//   // }
 
 
+// void signInWithGoogle(String email, String password) async {
+//   final GoogleSignInAccount googleuser = await GoogleSignIn().signIn();
+
+//   final GoogleSignInAuthentication googleAuth = await googleuser.authentication;
+
+//   final
+//   GoogleAuthCredential credential = GoogleAuthProvider.credential(
+//      idToken: googleAuth.idToken,
+//      accessToken: googleAuth.accessToken
+//   );
+//    await FirebaseAuth.instance.signInWithCredential(credential).then((value) => {postDetailsToFirestore()})
+//             .catchError((e) {
+//           Fluttertoast.showToast(msg: e.message);
+            
+//         });
+
+
+// }
+
+
+  // Future<UserCredential> signInWithFacebook(String email, String password) async {
+  //   // Trigger the sign-in flow
+  //   final LoginResult loginResult = await FacebookAuth.instance.login(
+  //    // permissions: ['email', 'password', 'name']
+  //   );
+
+  //   // Create a credential from the access token
+  //   final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(
+  //     loginResult.accessToken.token);
+
+  //    postDetailsToFirestore();
+  //   // Once signed in, return the UserCredential
+  //   return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+  // }
 
    postDetailsToFirestore() async {
-    
-
     // calling our firestore
     // calling our user model
     // sedning these values
