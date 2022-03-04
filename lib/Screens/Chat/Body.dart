@@ -8,7 +8,6 @@ import 'package:flutter_auth/constants.dart';
 
 User signinUser;
 final _firestore=FirebaseFirestore.instance;
-
 class Body extends StatefulWidget {
   @override
   State<Body> createState() => _BodyState();
@@ -30,16 +29,10 @@ class _BodyState extends State<Body> {
     _formkey.currentState.save();
   }
 
-  OutlineInputBorder _inputformdeco() {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(20.0),
-      borderSide:
-          BorderSide(width: 1.0, color: Colors.blue, style: BorderStyle.solid),
-    );
-  }
+
   final messageTextController=TextEditingController();
   final _auth = FirebaseAuth.instance;
-  String messageText;
+  String messageText="";
 
 
   void initState(){
@@ -73,7 +66,7 @@ class _BodyState extends State<Body> {
             
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(30),
                 color: Color(0xFFE1F5FE),
               ),
               child: Row(
@@ -83,7 +76,7 @@ class _BodyState extends State<Body> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
-                        vertical: 7,
+                        vertical: 5,
                       ),
                       child: Container(
                         child: Form(
@@ -97,62 +90,85 @@ class _BodyState extends State<Body> {
                               name = value;
                             },
                             decoration: InputDecoration(
-                              enabledBorder: _inputformdeco(),
-                              focusedBorder: _inputformdeco(),
+                              enabledBorder:UnderlineInputBorder(
+                                borderSide: BorderSide(color: kPrimaryColor),
+                              ) ,
+                             
                               contentPadding: EdgeInsets.symmetric(
                                 vertical: 10,
                                 horizontal: 20,
                               ),
                               hintText: 'Write your message here...',
-                              border: InputBorder.none,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 20,
+                  //   ),
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(20),
+                  //       color: kPrimaryColor,
+                  //     ),
+                  //     child: TextButton(
+                  //       onPressed: ()  {
+                  //         messageTextController.clear();
+                  //         _firestore.collection("Messages").add({
+                  //           'text':messageText,
+                  //           'sender':signinUser.email,
+                  //           'time':FieldValue.serverTimestamp(),
+                  //         });
+                        
+                  //         // For Flask >>>>
+                  //         //   String url = 'http://127.0.0.1:5000/';
+                  //         //   final response = await http.get(
+                  //         //   Uri.parse(url),
+                  //         //   );
+                           
+                  //         //   final decoded = json.decode(response.body) as Map< String , dynamic>;
+
+                  //         //  setState(() {
+                  //         //    greetings = decoded['greetings'];
+                  //         //  });
+                  //       },
+                  //       child: Text(
+                  //         'Send',
+                  //         style: TextStyle(
+                  //           color: Colors.white,
+                  //           fontWeight: FontWeight.bold,
+                  //           fontSize: 15,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                 Padding(
+                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: kPrimaryColor,
-                      ),
-                      child: TextButton(
-                        onPressed: ()  {
-                          messageTextController.clear();
-                          _firestore.collection("Messages").add({
-                            'text':messageText,
-                            'sender':signinUser.email,
-                            'time':FieldValue.serverTimestamp(),
-                          });
-                        
-                          // For Flask >>>>
-                          //   String url = 'http://127.0.0.1:5000/';
-                          //   final response = await http.get(
-                          //   Uri.parse(url),
-                          //   );
-                           
-                          //   final decoded = json.decode(response.body) as Map< String , dynamic>;
-
-                          //  setState(() {
-                          //    greetings = decoded['greetings'];
-                          //  });
-                        },
-                        child: Text(
-                          'Send',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
+                   child: IconButton(
+                    color: kPrimaryColor,
+                    disabledColor: Colors.grey[200],
+                    onPressed:(){
+                    messageText.isEmpty ? null:
+                            _firestore.collection("Messages").add({
+                              'text':messageText,
+                              'sender':signinUser.email,
+                              'time':FieldValue.serverTimestamp(),
+                            });
+                      messageTextController.clear();
+                      setState(() {
+                        messageText="";
+                      });
+                 
+                    } , 
+                    icon: Icon(Icons.send,size: 25,),
                     ),
-                  ),
-
+                 ),
                   //for post http
                   // Padding(
                   //   padding: const EdgeInsets.symmetric(

@@ -138,6 +138,7 @@ bool showSpinner=false;
   }
 
 void signIn(String email, String password) async {
+
     if (formKey.currentState.validate()) {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
@@ -149,7 +150,10 @@ void signIn(String email, String password) async {
                         return Chat();
                 },
               ),).catchError((e) {
-                   Fluttertoast.showToast(msg: e.message);
+                
+              
+                 Fluttertoast.showToast(msg: e.message);
+                            
                 })
                 },);
       } 

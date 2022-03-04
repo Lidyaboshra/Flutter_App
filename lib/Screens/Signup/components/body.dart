@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/Screens/Chat/Chat_Sceen.dart';
 //import 'package:flutter_svg/svg.dart';
 import 'package:flutter_auth/Screens/Login/login_screen.dart';
 import 'package:flutter_auth/Screens/Signup/components/background.dart';
+import 'package:flutter_auth/Screens/Signup/components/imagepicker.dart';
 import 'package:flutter_auth/Screens/Signup/components/or_divider.dart';
 import 'package:flutter_auth/Screens/Signup/components/social_icon.dart';
 import 'package:flutter_auth/components/already_have_an_account_acheck.dart';
@@ -44,6 +48,11 @@ final _auth = FirebaseAuth.instance;
 
 bool showSpinner=false;
 
+File userImage;
+
+void pickImage(File _pickedImage){
+  userImage=_pickedImage;
+}
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -62,6 +71,7 @@ bool showSpinner=false;
                 ),
                 SizedBox(height: size.height * 0.03),
               
+                UserPick(pickImage),
                 //FirstName Field
                 RoundedInputField(
                   hintText: "First Name",
@@ -166,7 +176,7 @@ bool showSpinner=false;
                     });
                     
                   try{
-                      signUp(emailContoller.text, passwordContoller.text);
+                      signUp(emailContoller.text, passwordContoller.text,userImage);
                      setState(() {
                       showSpinner=false;
                     });}
@@ -191,30 +201,30 @@ bool showSpinner=false;
                     );
                   },
                 ),
-                OrDivider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SocalIcon(
-                      iconSrc: "assets/icons/facebook.svg",
-                      press: (){
-                        //signInWithFacebook(emailContoller.text, passwordContoller.text);
-                      }
-                    ),
-                    // SocalIcon(
-                    //   iconSrc: "assets/icons/twitter.svg",
-                    //   press: () {
-                    //     //signUpWithMail();
-                    //   },
-                    // ),
-                    SocalIcon(
-                      iconSrc: "assets/icons/gmail.svg",
-                      press: () {
-                       // signInWithGoogle(emailContoller.text, passwordContoller.text);
-                      },
-                    ),
-                  ],
-                ),
+               // OrDivider(),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: <Widget>[
+                //     SocalIcon(
+                //       iconSrc: "assets/icons/facebook.svg",
+                //       press: (){
+                //         //signInWithFacebook(emailContoller.text, passwordContoller.text);
+                //       }
+                //     ),
+                //     // SocalIcon(
+                //     //   iconSrc: "assets/icons/twitter.svg",
+                //     //   press: () {
+                //     //     //signUpWithMail();
+                //     //   },
+                //     // ),
+                //     SocalIcon(
+                //       iconSrc: "assets/icons/gmail.svg",
+                //       press: () {
+                //        // signInWithGoogle(emailContoller.text, passwordContoller.text);
+                //       },
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),
@@ -223,7 +233,7 @@ bool showSpinner=false;
     );
   }
 
-  void signUp(String email, String password) async {
+  void signUp(String email, String password, File image) async {
     if (formKey.currentState.validate()) {
         await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
@@ -301,14 +311,18 @@ bool showSpinner=false;
 
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
     User user = _auth.currentUser;
-
     UserModel userModel = UserModel();
-
-    // writing all the values
+   // writing all the values
     userModel.email = user.email;
     userModel.uid = user.uid;
     userModel.firstName = firstname.text;
     userModel.secondName = lastname.text;
+
+    final ref = FirebaseStorage.instance.ref().child("User_Image").child(user.uid+'.jpg');
+  //  await ref.putFile(image);
+  //  final url= await ref.getDownloadURL();
+
+ 
 
     await firebaseFirestore
         .collection("users")
@@ -325,5 +339,3 @@ bool showSpinner=false;
                   );
   }
 }
-
-
